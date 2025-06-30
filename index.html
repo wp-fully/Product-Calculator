@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product Calculator</title>
+  <style>
+    *{margin: 0;padding: 0;box-sizing: border-box;}
+    :root {
+      --primary: #00FF00;
+      --highlight: yellow;
+    }
+    body {
+      font-family: Arial, sans-serif;
+
+      padding: 0;
+      box-sizing: border-box;
+      background: #f5f5f5;
+    }
+    .container {
+      max-width: 950px;
+      margin: auto;
+      background: white;
+      padding: 10px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .title {
+      background-color: var(--primary);
+      font-weight: bold;
+      font-size: 1.5em;
+      text-align: center;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+    #sellSAR{
+        background-color: #1e40af;
+        color: white;
+        text-align: center;
+    }
+    .notice {
+      background-color: #fef3c7;
+      color: #92400e;
+      padding: 8px;
+      text-align: center;
+    }
+    .calc-info {
+      background-color: #dbeafe;
+      color: #1e40af;
+      padding: 8px;
+      text-align: center;
+      width: 100%;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+    }
+    .highlight {
+      background-color: var(--highlight);
+      font-weight: bold;
+    }
+    .bold {
+      font-weight: bold;
+    }
+    input[type="number"] {
+      /* width: 100%; */
+      padding: 5px;
+      font-size: 1em;
+    }
+    button {
+      padding: 10px 20px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      border: none;
+      border-radius: 6px;
+      background: #333;
+      color: white;
+    }
+    @media (max-width: 600px) {
+      table, th, td {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+    <div style="display: grid;grid-template-columns: 1fr 1fr;">
+            <div class="notice" data-en="You can enter the initial cost in either USD or SAR, both will be synced." data-ar="يمكنك إدخال التكلفة الابتدائية بالدولار أو بالريال، وسيتم المزامنة تلقائيًا.">
+      You can enter the initial cost in either USD or SAR, both will be synced.
+    </div>
+
+    <div class="calc-info" data-en="We multiply the initial cost by 7.6 to get the final product cost." data-ar="نضرب تكلفة المنتج الابتدائية في 7.6 للحصول على التكلفة النهائية للمنتج.">
+      We multiply the initial cost by 7.6 to get the final product cost.
+    </div>
+    </div>
+
+  <div class="container">
+    <button id="langToggle">Switch to Arabic</button>
+
+    <div class="title" data-en="Product Calculator" data-ar="حاسبة المنتج">Product Calculator</div>
+
+
+
+    <table>
+      <tr>
+        <th data-en="Description" data-ar="الوصف">Description</th>
+        <th>USD</th>
+        <th>SAR</th>
+        <th data-en="Notes" data-ar="ملاحظات">Notes</th>
+      </tr>
+      <tr>
+        <td data-en="Product Initial Cost" data-ar="تكلفة المنتج الابتدائية">Product Initial Cost</td>
+        <td><input type="number" id="initialCost" value="10" /></td>
+        <td><input type="number" id="initialSARInput" value="38" /></td>
+        <td data-en="Please Calculate With 3.80 to convert into SAR" data-ar="من فضلك احسب باستخدام 3.80 للتحويل إلى ريال سعودي">Please Calculate With 3.80 to convert into SAR</td>
+      </tr>
+      <tr>
+        <td data-en="Product Cost With Include All Shiping Etc fee" data-ar="تكلفة المنتج مع جميع الرسوم">Product Cost With Include All Shiping Etc fee</td>
+        <td id="totalUSD">38</td>
+        <td id="totalSAR">144.4</td>
+        <td data-en="fee assumed" data-ar="الرسوم المفترضة">fee assumed</td>
+      </tr>
+    </table>
+
+    <table>
+      <tr class="bold">
+        <td data-en="Selling Price" data-ar="سعر البيع">Selling Price</td>
+        <td id="sellUSD">76</td>
+        <td id="sellSAR">288.8</td>
+      </tr>
+    </table>
+
+    <table>
+      <tr class="highlight">
+        <td data-en="Profit Margin (%)" data-ar="هامش الربح (%)">Profit Margin (%)</td>
+        <td colspan="2">100%</td>
+      </tr>
+      <tr>
+        <td data-en="Profit Amount" data-ar="قيمة الربح">Profit Amount</td>
+        <td id="profitUSD">38</td>
+        <td id="profitSAR">144.4</td>
+      </tr>
+    </table>
+  </div>
+
+  <script>
+    const toggleBtn = document.getElementById("langToggle");
+    let isEnglish = true;
+
+    toggleBtn.addEventListener("click", () => {
+      document.querySelectorAll("[data-en]").forEach(el => {
+        el.textContent = isEnglish ? el.getAttribute("data-ar") : el.getAttribute("data-en");
+      });
+      toggleBtn.textContent = isEnglish ? "التبديل إلى الإنجليزية" : "Switch to Arabic";
+      isEnglish = !isEnglish;
+    });
+
+    const initialCostInput = document.getElementById("initialCost");
+    const initialSARInput = document.getElementById("initialSARInput");
+
+    let isUpdating = false;
+
+    function updateFromUSD() {
+      if (isUpdating) return;
+      isUpdating = true;
+      const usd = parseFloat(initialCostInput.value) || 0;
+      initialSARInput.value = (usd * 3.8).toFixed(2);
+      recalculate();
+      isUpdating = false;
+    }
+
+    function updateFromSAR() {
+      if (isUpdating) return;
+      isUpdating = true;
+      const sar = parseFloat(initialSARInput.value) || 0;
+      initialCostInput.value = (sar / 3.8).toFixed(2);
+      recalculate();
+      isUpdating = false;
+    }
+
+    function recalculate() {
+      const exchangeRate = 3.8;
+      const initialCost = parseFloat(initialCostInput.value) || 0;
+      const margin = 100;
+
+      const totalUSD = initialCost * 3.8;
+      const totalSAR = totalUSD * exchangeRate;
+      const profitUSD = totalUSD * (margin / 100);
+      const profitSAR = profitUSD * exchangeRate;
+      const sellUSD = totalUSD + profitUSD;
+      const sellSAR = sellUSD * exchangeRate;
+
+      document.getElementById("totalUSD").textContent = totalUSD.toFixed(1);
+      document.getElementById("totalSAR").textContent = totalSAR.toFixed(1);
+      document.getElementById("profitUSD").textContent = profitUSD.toFixed(1);
+      document.getElementById("profitSAR").textContent = profitSAR.toFixed(1);
+      document.getElementById("sellUSD").textContent = sellUSD.toFixed(1);
+      document.getElementById("sellSAR").textContent = sellSAR.toFixed(1);
+    }
+
+    initialCostInput.addEventListener("input", updateFromUSD);
+    initialSARInput.addEventListener("input", updateFromSAR);
+
+    recalculate();
+  </script>
+
+</body>
+</html>
